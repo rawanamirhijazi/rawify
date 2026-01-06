@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>RAWIFY | Smart Resizer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Meta Tags النسخة الإنجليزية -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="description" content="RAWIFY – Professional tool to resize, compress and enhance images instantly. Supports PNG, JPG, WEBP. Fast & secure.">
+<meta name="keywords" content="RAWIFY, image editor, resize images, compress images, PNG, JPG, WEBP, photo tool, image processor">
+<meta name="author" content="RAWIFY">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#6366f1">
+
+<!-- PWA / Mobile -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+
+    <!-- ===== PWA Icons ===== -->
+    <link rel="icon" href="icon-192.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="icon-512.png" sizes="512x512">
+    <link rel="manifest" href="manifest.json">
+
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <style>
+        /* ===== Keep original CSS ===== */
+        :root {
+            --primary: #6366f1;
+            --accent: #06b6d4;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+
+        body {
+            margin: 0;
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+
+        header { text-align: center; margin-bottom: 40px; }
+        header h1 { font-size: 3rem; margin: 0; color: var(--primary); font-weight: 700; }
+        header p { color: var(--text-muted); font-size: 1.1rem; }
+
+        /* ===== تحسين زر تبديل اللغات ===== */
+        .lang-switch {
+            display: inline-flex;
+            gap: 10px;
+            margin-top: 10px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            font-weight: 600;
+        }
+        .lang-switch a {
+            display: inline-block;
+            padding: 8px 16px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            background: #f9fafb;
+            transition: all 0.2s ease;
+        }
+        .lang-switch a.active {
+            background: var(--primary);
+            color: white;
+        }
+        .lang-switch a:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--primary);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            background: #fcfdfe;
+        }
+
+        .upload-zone:hover { background: #f5f7ff; border-color: var(--accent); }
+        .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+        .image-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .image-wrap {
+            position: relative;
+            aspect-ratio: 1/1;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: #eee;
+        }
+
+        .image-wrap img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; cursor: pointer; }
+
+        .delete-btn {
+            position: absolute;
+            top: -8px; left: -8px;
+            background: #ef4444; color: white;
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 14px;
+            border: 2px solid white;
+            z-index: 10;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+
+        input, select {
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            outline: none;
+            font-family: inherit;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        .btn:hover { background: var(--accent); transform: translateY(-1px); }
+        .btn-outline { background: none; border: 1px solid var(--border); color: var(--text-muted); margin-top: 10px; width: 100%; }
+
+        .hidden { display: none !important; }
+
+        #resultStrip {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .result-item {
+            background: #f1f5f9;
+            padding: 8px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .result-item img { width: 100%; border-radius: 8px; display: block; }
+
+        #previewModal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            cursor: zoom-out;
+        }
+
+        #previewModal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+
+         /* زر الدعم */
+button[id^="jawwalBtn"], button[id^="supportBtn"] {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #5c4ee5, #7c63ff); /* أزرق بنفسجي */
+  color: #fff;
+  border: none;
+  padding: 14px 22px;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  transition: all 0.3s ease;
+  z-index: 999;
+}
+
+button[id^="jawwalBtn"]:hover, button[id^="supportBtn"]:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.35);
+}
+
+/* الخلفية للـ Popup */
+.support-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7); /* خلفية مظلمة */
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  backdrop-filter: blur(5px);
+}
+
+/* صندوق الدعم */
+.support-box {
+  background: #ffffff;
+  padding: 30px 25px;
+  max-width: 400px;
+  width: 90%;
+  border-radius: 20px;
+  text-align: center;
+  position: relative;
+  font-family: 'Cairo', sans-serif;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+  animation: popupFade 0.4s ease;
+}
+
+/* عنوان */
+.support-box h2 {
+  font-size: 22px;
+  margin-bottom: 12px;
+  color: #5c4ee5; /* أزرق بنفسجي */
+}
+
+/* الفقرة */
+.support-box p {
+  font-size: 15px;
+  color: #333;
+  line-height: 1.5;
+}
+
+/* رقم الهاتف / الرابط */
+.support-box div, .support-box strong {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 12px 0;
+  color: #7c63ff; /* لون ثاني بنفسجي فاتح */
+}
+
+/* زر إغلاق */
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 18px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: #5c4ee5;
+}
+
+/* زر PayPal / Jawwal Pay */
+.paypal-btn {
+  display: inline-block;
+  margin-top: 18px;
+  background: linear-gradient(135deg, #5c4ee5, #7c63ff);
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.paypal-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+}
+
+/* Animation للظهور */
+@keyframes popupFade {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive للموبايل */
+@media (max-width: 480px) {
+  .support-box {
+    padding: 25px 15px;
+  }
+
+  button[id^="jawwalBtn"], button[id^="supportBtn"] {
+    padding: 12px 18px;
+    font-size: 14px;
+  }
+
+  .paypal-btn {
+    padding: 10px 18px;
+    font-size: 14px;
+  }
+}
+
+        
+
+        footer { text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.9rem; }
+
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>RAWIFY</h1>
+        <p>The professional tool for resizing images in seconds – without uploading them to the internet</p>
+        <!-- رابط تغير اللغة -->
+        <div class="lang-switch">
+            <a href="index.html" class="active">🇸🇦 العربية</a>
+            <a href="index-en.html">🇺🇸 English</a>
+        </div>
+    </header>
+
+    <section id="page1" class="glass-card fade-in">
+        <div class="upload-zone">
+            <span style="font-size: 40px;">📂</span>
+            <h3>Select images to process</h3>
+            <p>You can select multiple images at once</p>
+            <input type="file" id="fileInput" multiple accept="image/*">
+        </div>
+        <div id="strip1" class="image-strip"></div>
+        <button id="goEditor" class="btn hidden" style="margin-top:20px">Resize Now →</button>
+    </section>
+
+    <section id="editor" class="glass-card hidden fade-in">
+        <h3 style="margin-top:0">Set New Dimensions</h3>
+        <div id="strip2" class="image-strip"></div>
+
+        <div class="controls-grid">
+            <div class="input-group">
+                <label>Width (px)</label>
+                <input type="number" id="widthInput" placeholder="Auto">
+            </div>
+            <div class="input-group">
+                <label>Height (px)</label>
+                <input type="number" id="heightInput" placeholder="Auto">
+            </div>
+            <div class="input-group">
+                <label>Percentage (%)</label>
+                <input type="number" id="percentInput" placeholder="Example: 50">
+            </div>
+            <div class="input-group">
+                <label>File Format</label>
+                <select id="formatSelect">
+                    <option value="image/png">PNG</option>
+                    <option value="image/jpeg">JPG</option>
+                    <option value="image/webp">WEBP</option>
+                </select>
+            </div>
+        </div>
+
+        <p id="errorMsg" style="color:#ef4444; font-size:0.85rem; margin-bottom:10px;" class="hidden">⚠️ Please set width, height, or percentage</p>
+
+        <button class="btn" onclick="processImages()">⚙️ Start Smart Resize</button>
+
+        <p style="text-align:center; color:#0f172a; font-size:0.8rem; margin:8px 0;">
+            🔒 Images are processed locally – no uploads to server
+        </p>
+
+        <div class="input-group" style="margin-top:10px">
+            <label>
+                <input type="checkbox" id="lockRatio"> 🔘 Lock Aspect Ratio
+            </label>
+        </div>
+
+        <button class="btn btn-outline" onclick="location.reload()">Cancel All</button>
+    </section>
+
+    <section id="result" class="glass-card hidden fade-in">
+        <h3 style="text-align:center">✨ Your images are ready</h3>
+        <p style="text-align:center; color: var(--text-muted); font-size: 0.85rem;">(Click image to view full size)</p>
+        <div id="resultStrip"></div>
+        <button class="btn" onclick="downloadImages()">⬇️ Download Files</button>
+        <button class="btn btn-outline" onclick="location.reload()" style="margin-top:10px">Resize New Set</button>
+    </section>
+</div>
+
+<div id="previewModal" class="hidden" onclick="this.classList.add('hidden')">
+    <img id="modalImg" src="" alt="RAWIFY Image Preview">
+</div>
+
+<footer>RAWIFY – 2026</footer>
+
+<script>
+    /* ===== JS code remains exactly the same ===== */
+    let images = [];
+    let processedFiles = [];
+
+    const fileInput = document.getElementById('fileInput');
+    const strip1 = document.getElementById('strip1');
+    const strip2 = document.getElementById('strip2');
+    const goEditor = document.getElementById('goEditor');
+    const modal = document.getElementById('previewModal');
+    const modalImg = document.getElementById('modalImg');
+
+    function showPreview(src) {
+        modalImg.src = src;
+        modal.classList.remove('hidden');
+    }
+
+    fileInput.onchange = (e) => {
+        const newFiles = Array.from(e.target.files);
+        images = [...images, ...newFiles];
+        renderStrips();
+        fileInput.value = ""; 
+    };
+
+    function renderStrips() {
+        strip1.innerHTML = ""; strip2.innerHTML = "";
+        if (images.length === 0) { goEditor.classList.add("hidden"); return; }
+
+        images.forEach((file, index) => {
+            const createWrapper = () => {
+                const wrap = document.createElement("div");
+                wrap.className = "image-wrap fade-in";
+                const img = document.createElement("img");
+                const url = URL.createObjectURL(file);
+                img.src = url;
+                img.alt = `RAWIFY Image Preview ${index + 1}`;
+                img.onclick = () => showPreview(url);
+                const del = document.createElement("div");
+                del.className = "delete-btn"; del.innerHTML = "✕";
+                del.onclick = (e) => { e.stopPropagation(); images.splice(index, 1); renderStrips(); };
+                wrap.append(img, del);
+                return wrap;
+            };
+            strip1.appendChild(createWrapper());
+            strip2.appendChild(createWrapper());
+        });
+        goEditor.classList.remove("hidden");
+    }
+
+    goEditor.onclick = () => {
+        document.getElementById("page1").classList.add("hidden");
+        document.getElementById("editor").classList.remove("hidden");
+    };
+
+    async function processImages() {
+        const w = document.getElementById("widthInput").value;
+        const h = document.getElementById("heightInput").value;
+        const p = document.getElementById("percentInput").value;
+        const lockRatio = document.getElementById("lockRatio").checked;
+        const errorMsg = document.getElementById("errorMsg");
+
+        if (!w && !h && !p) { errorMsg.classList.remove("hidden"); return; }
+        errorMsg.classList.add("hidden");
+
+        const resultStrip = document.getElementById("resultStrip");
+        resultStrip.innerHTML = "Processing...";
+        processedFiles = [];
+        const format = document.getElementById("formatSelect").value;
+
+        for (let i = 0; i < images.length; i++) {
+            const file = images[i];
+            const img = await createImage(file);
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+
+            let finalW, finalH;
+
+            if (p) {
+                finalW = img.width * (p / 100);
+                finalH = img.height * (p / 100);
+            } else {
+                finalW = parseInt(w) || img.width;
+                finalH = parseInt(h) || img.height;
+
+                if (lockRatio) {
+                    const ratio = img.width / img.height;
+                    if (w && !h) finalH = finalW / ratio;
+                    else if (!w && h) finalW = finalH * ratio;
+                    else finalH = finalW / ratio;
+                }
+            }
+
+            canvas.width = finalW;
+            canvas.height = finalH;
+            ctx.drawImage(img, 0, 0, finalW, finalH);
+
+            const dataUrl = canvas.toDataURL(format, 0.9);
+            processedFiles.push({ url: dataUrl, type: format.split('/')[1] });
+
+            const div = document.createElement("div");
+            div.className = "result-item fade-in";
+            div.onclick = () => showPreview(dataUrl);
+            div.innerHTML = `<img src="${dataUrl}" alt="RAWIFY Processed Image ${i+1}"><p style="font-size:10px; margin:5px 0">${Math.round(finalW)}x${Math.round(finalH)}</p>`;
+            resultStrip.appendChild(div);
+        }
+
+        resultStrip.querySelector(':first-child').parentElement.firstChild.remove();
+        document.getElementById("editor").classList.add("hidden");
+        document.getElementById("result").classList.remove("hidden");
+    }
+
+    function createImage(file) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.src = URL.createObjectURL(file);
+        });
+    }
+
+    async function downloadImages() {
+        if (processedFiles.length === 1) {
+            const a = document.createElement("a");
+            a.href = processedFiles[0].url;
+            a.download = `rawify-${Date.now()}.${processedFiles[0].type}`;
+            a.click();
+        } else {
+            const zip = new JSZip();
+            processedFiles.forEach((item, i) => {
+                zip.file(`rawify-${i+1}.${item.type}`, item.url.split(',')[1], {base64: true});
+            });
+            const blob = await zip.generateAsync({type: "blob"});
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "rawify-images.zip";
+            a.click();
+        }
+    }
+
+    // Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./service-worker.js')
+        .then(() => console.log('Service Worker registered'))
+        .catch(err => console.log('SW registration failed:', err));
+    }
+</script>
+
+<button id="jawwalBtnEn">💚 Support Tool – Jawwal Pay</button>
+
+<div id="jawwalModalEn" class="support-modal">
+  <div class="support-box">
+    <span class="close-btn" id="closeJawwalEn">×</span>
+
+    <h2>💚 Support via Jawwal Pay</h2>
+
+    <p>
+      You can support this tool by sending your contribution to the following Jawwal Pay number:
+    </p>
+
+    <div style="font-size:18px;font-weight:bold;margin:10px 0">
+      📱 0594754141
+    </div>
+
+    <small>
+      Support is optional – the tool is 100% free.
+    </small>
+  </div>
+</div>
+
+<script>
+  const jawwalBtnEn = document.getElementById("jawwalBtnEn");
+  const jawwalModalEn = document.getElementById("jawwalModalEn");
+  const closeJawwalEn = document.getElementById("closeJawwalEn");
+
+  jawwalBtnEn.onclick = () => jawwalModalEn.style.display = "flex";
+  closeJawwalEn.onclick = () => jawwalModalEn.style.display = "none";
+
+  window.addEventListener("click", e => {
+    if (e.target === jawwalModalEn) jawwalModalEn.style.display = "none";
+  });
+</script>
+
+</body>
+</html>
