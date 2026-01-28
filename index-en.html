@@ -5,23 +5,16 @@
     <title>RAWIFY | Smart Resizer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Meta Tags النسخة الإنجليزية -->
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="RAWIFY – Professional tool for instant image resizing, compression, and optimization. Supports PNG, JPG, WEBP. Fast and secure.">
+    <meta name="keywords" content="RAWIFY, Image Editor, Resize, Image Processing, PNG, JPG, WEBP, Photo Tool">
+    <meta name="author" content="RAWIFY">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#6366f1">
 
-<meta name="description" content="RAWIFY – Professional tool to resize, compress and enhance images instantly. Supports PNG, JPG, WEBP. Fast & secure.">
-<meta name="keywords" content="RAWIFY, image editor, resize images, compress images, PNG, JPG, WEBP, photo tool, image processor">
-<meta name="author" content="RAWIFY">
-<meta name="robots" content="index, follow">
-<meta name="theme-color" content="#6366f1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
-<!-- PWA / Mobile -->
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-
-
-    <!-- ===== PWA Icons ===== -->
     <link rel="icon" href="icon-192.png" sizes="192x192">
     <link rel="apple-touch-icon" href="icon-512.png" sizes="512x512">
     <link rel="manifest" href="manifest.json">
@@ -30,7 +23,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <style>
-        /* ===== Keep original CSS ===== */
         :root {
             --primary: #6366f1;
             --accent: #06b6d4;
@@ -42,7 +34,6 @@
         }
 
         * { box-sizing: border-box; transition: all 0.2s ease; }
-
         body {
             margin: 0;
             font-family: 'Cairo', sans-serif;
@@ -57,7 +48,6 @@
         header h1 { font-size: 3rem; margin: 0; color: var(--primary); font-weight: 700; }
         header p { color: var(--text-muted); font-size: 1.1rem; }
 
-        /* ===== تحسين زر تبديل اللغات ===== */
         .lang-switch {
             display: inline-flex;
             gap: 10px;
@@ -102,7 +92,6 @@
             position: relative;
             background: #fcfdfe;
         }
-
         .upload-zone:hover { background: #f5f7ff; border-color: var(--accent); }
         .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
@@ -125,7 +114,7 @@
 
         .delete-btn {
             position: absolute;
-            top: -8px; left: -8px;
+            top: -8px; right: -8px; /* Inversed for LTR */
             background: #ef4444; color: white;
             width: 26px; height: 26px;
             border-radius: 50%;
@@ -206,138 +195,61 @@
             box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
 
-         /* زر الدعم */
-button[id^="jawwalBtn"], button[id^="supportBtn"] {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: linear-gradient(135deg, #5c4ee5, #7c63ff); /* أزرق بنفسجي */
-  color: #fff;
-  border: none;
-  padding: 14px 22px;
-  border-radius: 50px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-  transition: all 0.3s ease;
-  z-index: 999;
-}
+        .social-toggle {
+            position: fixed;
+            right: 20px; /* Moved to right for LTR */
+            bottom: 20px;
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg,#6366f1,#7c63ff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            z-index: 1000;
+        }
 
-button[id^="jawwalBtn"]:hover, button[id^="supportBtn"]:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 25px rgba(0,0,0,0.35);
-}
+        .social-menu {
+            position: fixed;
+            right: 20px; /* Moved to right for LTR */
+            bottom: 90px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(10px);
+            transition: 0.3s ease;
+        }
 
-/* الخلفية للـ Popup */
-.support-modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7); /* خلفية مظلمة */
-  z-index: 1000;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  backdrop-filter: blur(5px);
-}
+        .social-menu.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
 
-/* صندوق الدعم */
-.support-box {
-  background: #ffffff;
-  padding: 30px 25px;
-  max-width: 400px;
-  width: 90%;
-  border-radius: 20px;
-  text-align: center;
-  position: relative;
-  font-family: 'Cairo', sans-serif;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.25);
-  animation: popupFade 0.4s ease;
-}
+        .social-menu a {
+            width: 48px;
+            height: 48px;
+            background: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            transition: 0.2s;
+        }
 
-/* عنوان */
-.support-box h2 {
-  font-size: 22px;
-  margin-bottom: 12px;
-  color: #5c4ee5; /* أزرق بنفسجي */
-}
+        .social-menu a:hover { transform: translateY(-4px); }
 
-/* الفقرة */
-.support-box p {
-  font-size: 15px;
-  color: #333;
-  line-height: 1.5;
-}
-
-/* رقم الهاتف / الرابط */
-.support-box div, .support-box strong {
-  font-size: 18px;
-  font-weight: 700;
-  margin: 12px 0;
-  color: #7c63ff; /* لون ثاني بنفسجي فاتح */
-}
-
-/* زر إغلاق */
-.close-btn {
-  position: absolute;
-  top: 15px;
-  right: 18px;
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.close-btn:hover {
-  color: #5c4ee5;
-}
-
-/* زر PayPal / Jawwal Pay */
-.paypal-btn {
-  display: inline-block;
-  margin-top: 18px;
-  background: linear-gradient(135deg, #5c4ee5, #7c63ff);
-  color: #fff;
-  padding: 12px 22px;
-  border-radius: 12px;
-  text-decoration: none;
-  font-weight: 700;
-  transition: all 0.3s ease;
-}
-
-.paypal-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.25);
-}
-
-/* Animation للظهور */
-@keyframes popupFade {
-  0% { transform: scale(0.9); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* Responsive للموبايل */
-@media (max-width: 480px) {
-  .support-box {
-    padding: 25px 15px;
-  }
-
-  button[id^="jawwalBtn"], button[id^="supportBtn"] {
-    padding: 12px 18px;
-    font-size: 14px;
-  }
-
-  .paypal-btn {
-    padding: 10px 18px;
-    font-size: 14px;
-  }
-}
-
-        
-
-        footer { text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.9rem; }
+        footer {
+            text-align: center;
+            padding: 40px;
+            font-size: 0.95rem;
+            color: #64748b;
+        }
 
         .fade-in { animation: fadeIn 0.3s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -348,23 +260,22 @@ button[id^="jawwalBtn"]:hover, button[id^="supportBtn"]:hover {
 <div class="container">
     <header>
         <h1>RAWIFY</h1>
-        <p>The professional tool for resizing images in seconds – without uploading them to the internet</p>
-        <!-- رابط تغير اللغة -->
+        <p>Professional tool to resize images in seconds – Processed locally in your browser</p>
         <div class="lang-switch">
-            <a href="index.html" class="active">🇸🇦 العربية</a>
-            <a href="index-en.html">🇺🇸 English</a>
+            <a href="index.html">🇸🇦 العربية</a>
+            <a href="index-en.html" class="active">🇺🇸 English</a>
         </div>
     </header>
 
     <section id="page1" class="glass-card fade-in">
         <div class="upload-zone">
             <span style="font-size: 40px;">📂</span>
-            <h3>Select images to process</h3>
+            <h3>Choose images to process</h3>
             <p>You can select multiple images at once</p>
             <input type="file" id="fileInput" multiple accept="image/*">
         </div>
         <div id="strip1" class="image-strip"></div>
-        <button id="goEditor" class="btn hidden" style="margin-top:20px">Resize Now →</button>
+        <button id="goEditor" class="btn hidden" style="margin-top:20px">Edit Dimensions Now →</button>
     </section>
 
     <section id="editor" class="glass-card hidden fade-in">
@@ -382,7 +293,7 @@ button[id^="jawwalBtn"]:hover, button[id^="supportBtn"]:hover {
             </div>
             <div class="input-group">
                 <label>Percentage (%)</label>
-                <input type="number" id="percentInput" placeholder="Example: 50">
+                <input type="number" id="percentInput" placeholder="e.g. 50">
             </div>
             <div class="input-group">
                 <label>File Format</label>
@@ -394,12 +305,12 @@ button[id^="jawwalBtn"]:hover, button[id^="supportBtn"]:hover {
             </div>
         </div>
 
-        <p id="errorMsg" style="color:#ef4444; font-size:0.85rem; margin-bottom:10px;" class="hidden">⚠️ Please set width, height, or percentage</p>
+        <p id="errorMsg" style="color:#ef4444; font-size:0.85rem; margin-bottom:10px;" class="hidden">⚠️ Please set dimensions or percentage to proceed</p>
 
-        <button class="btn" onclick="processImages()">⚙️ Start Smart Resize</button>
+        <button class="btn" onclick="processImages()">⚙️ Start Smart Processing</button>
 
         <p style="text-align:center; color:#0f172a; font-size:0.8rem; margin:8px 0;">
-            🔒 Images are processed locally – no uploads to server
+            🔒 Images are processed on your device only – no files are uploaded to any server
         </p>
 
         <div class="input-group" style="margin-top:10px">
@@ -408,15 +319,15 @@ button[id^="jawwalBtn"]:hover, button[id^="supportBtn"]:hover {
             </label>
         </div>
 
-        <button class="btn btn-outline" onclick="location.reload()">Cancel All</button>
+        <button class="btn btn-outline" onclick="location.reload()">Clear All</button>
     </section>
 
     <section id="result" class="glass-card hidden fade-in">
         <h3 style="text-align:center">✨ Your images are ready</h3>
-        <p style="text-align:center; color: var(--text-muted); font-size: 0.85rem;">(Click image to view full size)</p>
+        <p style="text-align:center; color: var(--text-muted); font-size: 0.85rem;">(Click an image to view full size)</p>
         <div id="resultStrip"></div>
         <button class="btn" onclick="downloadImages()">⬇️ Download Files</button>
-        <button class="btn btn-outline" onclick="location.reload()" style="margin-top:10px">Resize New Set</button>
+        <button class="btn btn-outline" onclick="location.reload()" style="margin-top:10px">Process New Batch</button>
     </section>
 </div>
 
@@ -424,10 +335,25 @@ button[id^="jawwalBtn"]:hover, button[id^="supportBtn"]:hover {
     <img id="modalImg" src="" alt="RAWIFY Image Preview">
 </div>
 
-<footer>RAWIFY – 2026</footer>
+<footer>
+    RAWIFY – 2026 | <strong>Rawan Amir Hijazi</strong><br>
+</footer>
+
+<div class="social-toggle" onclick="toggleSocial()">
+    <svg width="24" height="24" fill="#fff" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+    </svg>
+</div>
+
+<div class="social-menu" id="socialMenu">
+    <a href="https://wa.me/970595297159" target="_blank"><svg fill="#25D366" viewBox="0 0 24 24" width="26"><path d="M12 2a10 10 0 0 0-8.5 15.3L2 22l4.8-1.5A10 10 0 1 0 12 2zm5.5 14.5c-.2.6-1.2 1.2-1.7 1.3-.4.1-.9.2-3-.6-2.4-.9-4-3.3-4.1-3.5-.1-.2-1-1.4-1-2.6 0-1.2.6-1.8.8-2 .2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5.2.6.7 2 .8 2.1.1.1.1.3 0 .5-.1.2-.2.3-.3.4-.2.2-.3.3-.5.5-.2.2-.3.3-.1.6.2.3.8 1.3 1.8 2.1 1.2 1 2.2 1.3 2.5 1.5.3.1.5.1.7-.1.2-.2.7-.8.9-1 .2-.2.4-.2.7-.1.3.1 1.8.8 2.1 1 .3.2.5.3.5.5 0 .2 0 1.1-.2 1.7z"/></svg></a>
+    <a href="https://t.me/rawanhijazi_0" target="_blank"><svg fill="#0088cc" viewBox="0 0 24 24" width="26"><path d="M9.9 15.6l-.4 4.2c.6 0 .8-.2 1.1-.6l2.7-2.6 5.6 4.1c1 .6 1.8.3 2-.9L24 3.7c.3-1.3-.5-1.8-1.5-1.4L1.2 9.8C-.1 10.3 0 11 1 11.3l5.3 1.6L19.6 5c.6-.4 1.2-.2.7.2"/></svg></a>
+    <a href="https://instagram.com/rawanhijazi2003" target="_blank"><svg fill="#E4405F" viewBox="0 0 24 24" width="26"><path d="M7 2C4.2 2 2 4.2 2 7v10c0 2.8 2.2 5 5 5h10c2.8 0 5-2.2 5-5V7c0-2.8-2.2-5-5-5H7zm5 5.8A4.2 4.2 0 1 1 7.8 12 4.2 4.2 0 0 1 12 7.8zm4.5-.9a1 1 0 1 1-1 1 1 1 0 0 1 1-1z"/></svg></a>
+    <a href="https://www.facebook.com/profile.php?id=100081812613159" target="_blank"><svg fill="#1877F2" viewBox="0 0 24 24" width="26"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H8v-3h2.4V9.5c0-2.4 1.4-3.7 3.6-3.7 1 0 2 .2 2 .2v2.3h-1.1c-1.1 0-1.4.7-1.4 1.3V12H17l-.4 3h-2.9v7A10 10 0 0 0 22 12z"/></svg></a>
+    <a href="https://www.linkedin.com/in/rawan-hijazi-ab889b368" target="_blank"><svg fill="#0A66C2" viewBox="0 0 24 24" width="26"><path d="M4.98 3.5A2.5 2.5 0 1 0 5 8a2.5 2.5 0 0 0-.02-4.5zM3 9h4v12H3zM9 9h3.6v1.7h.1c.5-.9 1.7-1.9 3.6-1.9 3.8 0 4.5 2.5 4.5 5.7V21h-4v-5.4c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V21H9z"/></svg></a>
+</div>
 
 <script>
-    /* ===== JS code remains exactly the same ===== */
     let images = [];
     let processedFiles = [];
 
@@ -437,6 +363,10 @@ button[id^="jawwalBtn"]:hover, button[id^="supportBtn"]:hover {
     const goEditor = document.getElementById('goEditor');
     const modal = document.getElementById('previewModal');
     const modalImg = document.getElementById('modalImg');
+
+    function toggleSocial(){
+        document.getElementById("socialMenu").classList.toggle("active");
+    }
 
     function showPreview(src) {
         modalImg.src = src;
@@ -453,7 +383,6 @@ button[id^="jawwalBtn"]:hover, button[id^="supportBtn"]:hover {
     function renderStrips() {
         strip1.innerHTML = ""; strip2.innerHTML = "";
         if (images.length === 0) { goEditor.classList.add("hidden"); return; }
-
         images.forEach((file, index) => {
             const createWrapper = () => {
                 const wrap = document.createElement("div");
@@ -532,7 +461,7 @@ button[id^="jawwalBtn"]:hover, button[id^="supportBtn"]:hover {
             resultStrip.appendChild(div);
         }
 
-        resultStrip.querySelector(':first-child').parentElement.firstChild.remove();
+        if(resultStrip.firstChild.nodeType === 3) resultStrip.firstChild.remove();
         document.getElementById("editor").classList.add("hidden");
         document.getElementById("result").classList.remove("hidden");
     }
@@ -564,51 +493,10 @@ button[id^="jawwalBtn"]:hover, button[id^="supportBtn"]:hover {
         }
     }
 
-    // Service Worker for PWA
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./service-worker.js')
-        .then(() => console.log('Service Worker registered'))
-        .catch(err => console.log('SW registration failed:', err));
+        navigator.serviceWorker.register('./service-worker.js');
     }
-</script>
-
-<button id="jawwalBtnEn">🤍 Support Tool</button>
-
-<div id="jawwalModalEn" class="support-modal">
-  <div class="support-box">
-    <span class="close-btn" id="closeJawwalEn">×</span>
-
-    <h2>🤍 Management support via Jawwal Pay</h2>
-
-    <p>
-      You can support this tool by sending your contribution to the following Jawwal Pay number:
-    </p>
-
-    <div style="font-size:18px;font-weight:bold;margin:10px 0">
-      📱 0599549904
-    </div>
-
-    <small>
-      Support is optional – the tool is 100% free.
-    </small>
-  </div>
-</div>
-
-<script>
-  const jawwalBtnEn = document.getElementById("jawwalBtnEn");
-  const jawwalModalEn = document.getElementById("jawwalModalEn");
-  const closeJawwalEn = document.getElementById("closeJawwalEn");
-
-  jawwalBtnEn.onclick = () => jawwalModalEn.style.display = "flex";
-  closeJawwalEn.onclick = () => jawwalModalEn.style.display = "none";
-
-  window.addEventListener("click", e => {
-    if (e.target === jawwalModalEn) jawwalModalEn.style.display = "none";
-  });
 </script>
 
 </body>
 </html>
-
-
-
